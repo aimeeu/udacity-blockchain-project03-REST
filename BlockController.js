@@ -52,12 +52,21 @@ class BlockController {
      * Implement a POST Endpoint to add a new Block, url: "/api/block"
      */
     apiPostNewBlock() {
-        this.app.post("/api/block", (req, res) => {
-            let data = req.body.body;
-            if (data === undefined || data.length === 0) {
-                console.log('apiPostNewBlock body is empty');
-                res.status(400).json({error: 'Unable to add new block; body is empty'});
+        this.app.post("/block", (req, res) => {
+            let data = undefined;
+
+            try {
+                data = req.body.body;
+                if (data === undefined || data.length === 0) {
+                    console.log('apiPostNewBlock body is empty');
+                    res.status(400).json({error: 'Unable to add new block; body is empty'});
+                }
+            }catch (e) {
+                let msg = 'Unable to add block: ' + err.message;
+                console.log(msg, err);
+                res.status(500).json({error: msg});
             }
+
             console.log('adding new block');
             let newBlock = new Block.Block(data);
             this.addBlock(newBlock).then((result) => {
@@ -75,7 +84,7 @@ class BlockController {
      * Implement a GET Endpoint to retrieve a block by height, url: "/api/block/:height"
      */
     apiGetBlockByHeight() {
-        this.app.get("/api/block/:height", (req, res) => {
+        this.app.get("/block/:height", (req, res) => {
             let height = undefined;
 
             try {
@@ -104,7 +113,7 @@ class BlockController {
   this returns all the entries in the chain
    */
     apiGetBlockchain() {
-        this.app.get("/api/blockchain", (req, res) => {
+        this.app.get("/blockchain", (req, res) => {
             this.getAllBlocks().then((chainMap) => {
                 //resolves an empty Map if nothing found
                 if (chainMap.size === 0) {
@@ -124,7 +133,7 @@ class BlockController {
     this returns the height of the last block in the chain
      */
     apiGetBlockchainHeight() {
-        this.app.get("/api/blockchain/height", (req, res) => {
+        this.app.get("/blockchain/height", (req, res) => {
             this.getBlockHeight().then((height) => {
                 res.status(200).json(height);
             }).catch((err) => {
@@ -139,7 +148,7 @@ class BlockController {
     this returns the total number of blocks in the chain (which should be blockheight + 1)
     */
     apiGetTotalNumberBlockInChain() {
-        this.app.get("/api/blockchain/totalblocks", (req, res) => {
+        this.app.get("/blockchain/totalblocks", (req, res) => {
             this.getTotalNumBlocksInChain().then((total) => {
                 res.status(200).json(total);
             }).catch((err) => {
@@ -151,7 +160,7 @@ class BlockController {
     }
 
     apiValidateBlock(height) {
-        this.app.get("/api/block/valid/:height", (req, res) => {
+        this.app.get("/block/valid/:height", (req, res) => {
             let height = undefined;
 
             try {
@@ -172,7 +181,7 @@ class BlockController {
     }
 
     apiValidateChain() {
-        this.app.get("/api/blockchain/valid", (req, res) => {
+        this.app.get("/blockchain/valid", (req, res) => {
             this.validateChain().then((valid) => {
                 res.status(200).json(valid);
             }).catch((err) => {

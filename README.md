@@ -2,7 +2,7 @@
 
 # Objectives
 
-1. Create a RESTful API that uses Project 2 and implements the following endpoints:
+1. Create a RESTful API that uses [Project 2](https://github.com/aimeeu/udacity-blockchain-proj2-privateBlockchain) and implements the following endpoints:
  
     1. GET endpoint that retrieves a block by height
     2. POST endpoint to create a new block; block data is defined in JSON format in the body 
@@ -26,34 +26,56 @@
 
 ```$ node app.js```
 
+The genesis block is created when the application starts.
 
 # Testing
 
+The server runs on [localhost:8000](http://localhost:8000). Curl scripts are provided below so the code can be tested. 
+I used [Insomnia](https://insomnia.rest/).
+
 ## getBlock 
-GET a block by index
+GET a block by height
 
-returns 200 and block in JSON format if successful
+URL: ```http://<host>:8000/block/<height>```
 
-returns 500 and error message if not
+| Return Code   | Returns       | Definition 
+| ------------- | --------------| --------------------------------------|
+| 200           | the block     | success; block is found               |
+| 400           | error message | height cannot be parsed to an integer |  
+| 500           | error message | code throws an error                  |  
+
+
 
 ```bash
 
-$ curl --request GET --url http://localhost:9000/api/block/6
+
 
 ```
 
 Response:
 ```json
-{
-  "hash": "e2a93b539b96468a19e7b81b8998746d479d34f7b3855886f620b84ef3b794ae",
-  "height": 6,
-  "body": "Test Data #6",
-  "time": "1558647172"
-}
+
 ```
 
 ## addBlock 
 POST data for a new block
+
+URL: ```http://<host>:8000/block```
+
+Message body in JSON format:
+```json
+{
+      "body": "Testing block with test string data"
+}
+
+```
+
+
+| Return Code   | Returns         | Definition 
+| ------------- | ----------------| -------------------------|
+| 200           | success message | success; block is found  |
+| 400           | error message   | message body is empty    |  
+| 500           | error message   | code throws an error     | 
 
 returns 200 and message in JSON format if successful
 
@@ -61,10 +83,7 @@ returns 500 and error message if not
 
 ```bash
 
-$ curl --request POST \
-    --url http://localhost:9000/api/block \
-    --header 'content-type: application/json' \
-    --data '{"body": "Testing block with test string data"}'
+
 
 ```
 
@@ -83,7 +102,7 @@ returns 200 and blocks in JSON format if successful
 returns 500 and error message if not
 
 ```bash
-curl --request GET --url http://localhost:9000/api/blockchain
+curl --request GET --url http://localhost:8000/api/blockchain
 ```
 
 ```json
