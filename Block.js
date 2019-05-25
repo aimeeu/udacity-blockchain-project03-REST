@@ -23,12 +23,12 @@
 |  ===============================================*/
 
 class Block {
-	constructor(data) {
-		this.data = data;
+	constructor(body) {
+		this.body = body;
 	}
 
-	getData() {
-		return this.data;
+	getBody() {
+		return this.body;
 	}
 
 	getHeight() {

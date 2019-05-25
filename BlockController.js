@@ -58,19 +58,20 @@ class BlockController {
             try {
                 data = req.body.body;
                 if (data === undefined || data.length === 0) {
-                    console.log('apiPostNewBlock body is empty');
-                    res.status(400).json({error: 'Unable to add new block; body is empty'});
+                    console.log('apiPostNewBlock data is empty');
+                    res.status(400).json({error: 'Unable to add new block; body element is missing or empty; see docs for correct format'});
+                    return;
                 }
             }catch (e) {
-                let msg = 'Unable to add block: ' + err.message;
-                console.log(msg, err);
+                let msg = 'Unable to add block: ' + e.message;
+                console.log(msg, e);
                 res.status(500).json({error: msg});
             }
 
             console.log('adding new block');
             let newBlock = new Block.Block(data);
             this.addBlock(newBlock).then((result) => {
-                res.status(201).json({message: 'Block added!'});
+                res.status(201).json({newBlock: result});
             }).catch((err) => {
                 let msg = 'Unable to add block: ' + err.message;
                 console.log(msg, err);
@@ -86,10 +87,17 @@ class BlockController {
     apiGetBlockByHeight() {
         this.app.get("/block/:height", (req, res) => {
             let height = undefined;
+            //console.log("height: ", req.params.height);
 
             try {
                 height = Number.parseInt(req.params.height);
+                //console.log("height after Number.parseInt: ", height);
+                if (isNaN(height)) {
+                    res.status(400).json({error: 'Height must be an integer'});
+                    return;
+                }
             } catch (e) {
+                console.log(e);
                 res.status(400).json({error: 'Height must be an integer'});
                 return;
             }
@@ -115,11 +123,12 @@ class BlockController {
     apiGetBlockchain() {
         this.app.get("/blockchain", (req, res) => {
             this.getAllBlocks().then((chainMap) => {
+                console.log("chainMap.size ", chainMap.size);
                 //resolves an empty Map if nothing found
-                if (chainMap.size === 0) {
-                    res.status(404).json({error: 'Blockchain not found! Danger, Will Robinson!!!'});
+                if (chainMap.size > 0) {
+                    res.status(200).json( {blockchain: Array.from(chainMap.entries()) } );
                 } else {
-                    res.status(200).json(chainMap.entries());
+                    res.status(404).json({error: 'Blockchain not found! Danger, Will Robinson!!!'});
                 }
             }).catch((err) => {
                 let msg = 'Unable to fetch blockchain: ' + err.message;
@@ -135,7 +144,7 @@ class BlockController {
     apiGetBlockchainHeight() {
         this.app.get("/blockchain/height", (req, res) => {
             this.getBlockHeight().then((height) => {
-                res.status(200).json(height);
+                res.status(200).json({height: height});
             }).catch((err) => {
                 let msg = 'Unable to fetch blockchain: ' + err.message;
                 console.log(msg);
@@ -150,7 +159,7 @@ class BlockController {
     apiGetTotalNumberBlockInChain() {
         this.app.get("/blockchain/totalblocks", (req, res) => {
             this.getTotalNumBlocksInChain().then((total) => {
-                res.status(200).json(total);
+                res.status(200).json( {totalNumBlocks: total} );
             }).catch((err) => {
                 let msg = 'Unable to fetch total number of blocks in chain: ' + err.message;
                 console.log(msg);
@@ -162,16 +171,24 @@ class BlockController {
     apiValidateBlock(height) {
         this.app.get("/block/valid/:height", (req, res) => {
             let height = undefined;
+            //console.log("height: ", req.params.height);
 
             try {
                 height = Number.parseInt(req.params.height);
+                //console.log("height after Number.parseInt: ", height);
+                if (isNaN(height)) {
+                    res.status(400).json({error: 'Height must be an integer'});
+                    return;
+                }
             } catch (e) {
+                console.log(e);
                 res.status(400).json({error: 'Height must be an integer'});
                 return;
             }
 
             this.validateBlock(height).then((valid) => {
-                res.status(200).json(valid);
+                console.log("block is valid: ", valid);
+                res.status(200).json( {valid: valid} );
             }).catch((err) => {
                 let msg = 'Unable to block with height: ' + height + '; error: ' + err.message;
                 console.log(msg);
@@ -182,8 +199,8 @@ class BlockController {
 
     apiValidateChain() {
         this.app.get("/blockchain/valid", (req, res) => {
-            this.validateChain().then((valid) => {
-                res.status(200).json(valid);
+            this.validateChain().then((errorLog) => {
+                    res.status(200).json( {errorLog: errorLog} );
             }).catch((err) => {
                 let msg = 'Unable to validate blockchain: ' + err.message;
                 console.log(msg);
@@ -298,7 +315,8 @@ class BlockController {
                     //console.log("blockchain.addBlock(block) calling self.dao.addBlock(newBlock): ", newBlock);
                     self.dao.addBlock(newBlock).then((result) => {
                         //console.log("blockchain.addBlock(block) self.dao.addBlock result: ", result);
-                        resolve(result);
+                        //returns a boolean because level does not return an object on database put
+                        resolve(newBlock);
                     }).catch((err) => {
                         console.log("blockchain.addBlock(block) self.dao.addBlock error: ", err);
                         reject(err);

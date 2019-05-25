@@ -1,3 +1,24 @@
+<!---
+.. ===============LICENSE_START=======================================================
+.. Acumos CC-BY-4.0
+.. ===================================================================================
+.. Copyright (C) 2019 Aimee Ukasick. All rights reserved.
+.. ===================================================================================
+.. This documentation file is distributed by Aimee Ukasick
+.. under the Creative Commons Attribution 4.0 International License (the "License");
+.. you may not use this file except in compliance with the License.
+.. You may obtain a copy of the License at
+..
+.. http://creativecommons.org/licenses/by/4.0
+..
+.. This file is distributed on an "AS IS" BASIS,
+.. WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.. See the License for the specific language governing permissions and
+.. limitations under the License.
+.. ===============LICENSE_END=========================================================
+-->
+
+
 # Udacity Blockchain Nanodegree - Project 3 - RESTful Web API with Node.js Framework
 
 # Objectives
@@ -16,27 +37,42 @@
 
 # Installation
 
-## Clone and install
+## Cloning and installing
 
 ```$ git clone https://github.com/aimeeu/udacity-blockchain-project03-REST.git```
 
 ```$ npm install```
 
-## Start the application
+## Starting the application
 
 ```$ node app.js```
 
 The genesis block is created when the application starts.
 
-# Testing
+# Testing the two endpoints required for the project
 
-The server runs on [localhost:8000](http://localhost:8000). Curl scripts are provided below so the code can be tested. 
-I used [Insomnia](https://insomnia.rest/).
+The server runs on [localhost:8000](http://localhost:8000). 
 
-## getBlock 
-GET a block by height
+Curl scripts are provided below so the code can be tested. jq is used to format the returned JSON.
 
-URL: ```http://<host>:8000/block/<height>```
+
+
+
+
+## GET a block by height 
+
+
+Endpoint: ```http://<host>:8000/block/<height>```
+
+```bash
+$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/0 \
+    | {
+      read body
+      read code
+      echo $code
+       jq <<< "$body"
+  }
+```
 
 | Return Code   | Returns       | Definition 
 | ------------- | --------------| --------------------------------------|
@@ -44,134 +80,397 @@ URL: ```http://<host>:8000/block/<height>```
 | 400           | error message | height cannot be parsed to an integer |  
 | 500           | error message | code throws an error                  |  
 
+Returns a block in JSON format.
 
+
+### CURL example for success condition
 
 ```bash
-
+aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/0 \
+>   | {
+>     read body
+>     read code
+>     echo $code
+>      jq <<< "$body"
+> }
+200
+{
+  "body": "This is the Genesis Block",
+  "height": 0,
+  "timestamp": "1558745679",
+  "previousBlockHash": 0,
+  "hash": "9d992496614c6ad4819c32b97c22f84b445cf212dd9ba836a46355fe029b0651"
+}
 
 
 ```
 
-Response:
-```json
+### Error conditions
 
+Request contains a valid integer height that does not exist in the database
+
+Curl command:
+```bash
+$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/45 \
+    | {
+      read body
+      read code
+      echo $code
+       jq <<< "$body"
+  }
+```
+Example:
+```bash
+aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/45 \
+>     | {
+>       read body
+>       read code
+>       echo $code
+>        jq <<< "$body"
+>   }
+404
+{
+  "error": "Block not found"
+}
 ```
 
-## addBlock 
-POST data for a new block
 
-URL: ```http://<host>:8000/block```
+Request contains for height a value that does not parse to an integer
 
-Message body in JSON format:
+Curl command:
+```bash
+$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/bubba \
+    | {
+      read body
+      read code
+      echo $code
+       jq <<< "$body"
+  }
+```
+Example:
+```bash
+aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/bubba \
+>     | {
+>       read body
+>       read code
+>       echo $code
+>        jq <<< "$body"
+>   }
+400
+{
+  "error": "Height must be an integer"
+}
+```
+
+
+## POST data for a new block 
+Adds a new block with specified body. Returns the new block.
+
+Endpoint: ```http://<host>:8000/block```
+
+Example block body in JSON format:
 ```json
 {
       "body": "Testing block with test string data"
 }
 
 ```
-
-
-| Return Code   | Returns         | Definition 
-| ------------- | ----------------| -------------------------|
-| 200           | success message | success; block is found  |
-| 400           | error message   | message body is empty    |  
-| 500           | error message   | code throws an error     | 
-
-returns 200 and message in JSON format if successful
-
-returns 500 and error message if not
-
+Curl command:
 ```bash
-
-
-
-```
-
-Response:
-```json
-{
-  "message": "Block added!"
+ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block \
+  --header 'content-type: application/json' \
+  --data '{"body": "Testing block with test string data"}'  | {
+    read body
+    read code
+    echo $code
+    jq <<< "$body"
 }
 ```
 
-## getBlockchain
-GET all the blocks in the chain
+| Return Code   | Returns         | Definition 
+| ------------- | ----------------| -------------------------|
+| 201           | the new block   | success; block has been added  |
+| 400           | error message   | message body is missing, 'data' element is missing, data element is empty    |  
+| 500           | error message   | code throws an error     | 
 
-returns 200 and blocks in JSON format if successful
 
-returns 500 and error message if not
 
+### CURL example
 ```bash
-curl --request GET --url http://localhost:8000/api/blockchain
+aimee@aimee-lemur:~$  curl -s -w "\n%{http_code}"  --url http://localhost:8000/block \
+>   --header 'content-type: application/json' \
+>   --data '{"body": "Testing block with test string data"}'  | {
+>     read body
+>     read code
+>     echo $code
+>     jq <<< "$body"
+> }
+201
+{
+  "newBlock": {
+    "body": "Testing block with test string data",
+    "height": 1,
+    "timestamp": "1558746381",
+    "previousBlockHash": "9d992496614c6ad4819c32b97c22f84b445cf212dd9ba836a46355fe029b0651",
+    "hash": "84a58ffa0cfec962f521f63d2c60efcd46d800da797df204f1b831517145264a"
+  }
+}
 ```
 
-```json
-[
-  {
-    "hash": "66d580d4c060e433cb9f1af562e263d3e62a1fa57c85e813f4e3c2eff329449d",
-    "height": 0,
-    "body": "Test Data #0",
-    "time": "1558647172"
-  },
-  {
-    "hash": "b77351e6faa1890458ee457a96edbbf74d6ba17e0d81718ed446f48a50f59cd4",
-    "height": 1,
-    "body": "Test Data #1",
-    "time": "1558647172"
-  },
-  {
-    "hash": "7ce049c2e39e0dc6290a7041853627dac328ff1608490444bb5dd7525ab407e7",
-    "height": 2,
-    "body": "Test Data #2",
-    "time": "1558647172"
-  },
-  {
-    "hash": "8d1c7a715a462b7d683efc1fc511db4740b8c6b7ff52686c7aa673ff09d64d51",
-    "height": 3,
-    "body": "Test Data #3",
-    "time": "1558647172"
-  },
-  {
-    "hash": "149bac712f4117c8ed832d9fc670b6d8c5792a95da0371f068100d333bb4332e",
-    "height": 4,
-    "body": "Test Data #4",
-    "time": "1558647172"
-  },
-  {
-    "hash": "9e04d1b6ee21424d10ffbf6b7fa2107c60bc2f680629c00185b1f6487503bd25",
-    "height": 5,
-    "body": "Test Data #5",
-    "time": "1558647172"
-  },
-  {
-    "hash": "e2a93b539b96468a19e7b81b8998746d479d34f7b3855886f620b84ef3b794ae",
-    "height": 6,
-    "body": "Test Data #6",
-    "time": "1558647172"
-  },
-  {
-    "hash": "8bc962b70d9108718980f81e70aec815e8333ea1b70395829a6ea5532a5ef602",
-    "height": 7,
-    "body": "Test Data #7",
-    "time": "1558647172"
-  },
-  {
-    "hash": "c035f06e240f1f709826b3080a3ba4706a3a840ff28c4f62e979e4e243cca315",
-    "height": 8,
-    "body": "Test Data #8",
-    "time": "1558647172"
-  },
-  {
-    "hash": "f5378231eda5b3387991a41f5794ede26c1e5b8f3f3496c5c68f92b87e64808e",
-    "height": 9,
-    "body": "Test Data #9",
-    "time": "1558647172"
-  },
-  {
-    "hash": "e4d73ff373d4db1e16fbf2e177ac079e2e1218cf93be0d0d234214f134dccaf8",
-    "height": 0,
-    "body": "Testing block with test string data",
-    "time": "1558647174"
-  }
-]
+
+
+### Error conditions
+
+#### 'body' element is missing from message body, i.e. incorrect element name
+```bash
+ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block \
+  --header 'content-type: application/json' \
+  --data '{"BLOCK-BODY": "Testing block with test string data"}'  | {
+    read body
+    read code
+    echo $code
+    jq <<< "$body"
+}
+```
+
+```bash
+aimee@aimee-lemur:~$  curl -s -w "\n%{http_code}"  --url http://localhost:8000/block \
+>   --header 'content-type: application/json' \
+>   --data '{"BLOCK-BODY": "Testing block with test string data"}'  | {
+>     read body
+>     read code
+>     echo $code
+>     jq <<< "$body"
+> }
+400
+{
+  "error": "Unable to add new block; body element is missing or empty; see docs for correct format"
+}
+```
+
+#### 'body' element contains an empty string
+```bash
+ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block \
+  --header 'content-type: application/json' \
+  --data '{"body": ""}'  | {
+    read body
+    read code
+    echo $code
+    jq <<< "$body"
+}
+```
+```bash
+aimee@aimee-lemur:~$  curl -s -w "\n%{http_code}"  --url http://localhost:8000/block \
+>   --header 'content-type: application/json' \
+>   --data '{"body": ""}'  | {
+>     read body
+>     read code
+>     echo $code
+>     jq <<< "$body"
+> }
+400
+{
+  "error": "Unable to add new block; body element is missing or empty; see docs for correct format"
+}
+```
+
+
+
+# Testing additional endpoints not required by the project
+
+## GET the blockchain
+Get all the blocks in the chain
+
+| Return Code   | Returns       | Definition 
+| ------------- | --------------| --------------------------------------|
+| 200           | the blockchain | success |
+| 404           | error message | blockchain not found (should be impossible) |
+| 500           | error message | code throws an error |  
+
+```bash
+curl -s -w "\n%{http_code}"  \
+    --url http://localhost:8000/blockchain \
+  | {
+    read body
+    read code
+    echo $code
+     jq <<< "$body"
+}
+```
+```bash
+aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/blockchain \
+>   | {
+>     read body
+>     read code
+>     echo $code
+>      jq <<< "$body"
+> }
+200
+{
+  "blockchain": [
+    [
+      0,
+      {
+        "body": "This is the Genesis Block",
+        "height": 0,
+        "timestamp": "1558745679",
+        "previousBlockHash": 0,
+        "hash": "9d992496614c6ad4819c32b97c22f84b445cf212dd9ba836a46355fe029b0651"
+      }
+    ],
+    [
+      1,
+      {
+        "body": "Testing block with test string data",
+        "height": 1,
+        "timestamp": "1558746381",
+        "previousBlockHash": "9d992496614c6ad4819c32b97c22f84b445cf212dd9ba836a46355fe029b0651",
+        "hash": "84a58ffa0cfec962f521f63d2c60efcd46d800da797df204f1b831517145264a"
+      }
+    ]
+  ]
+}
+
+
+```
+
+
+## GET the height of the blockchain
+Gets the height of the blockchain, which is the height of the block last added to the chain
+
+| Return Code   | Returns       | Definition 
+| ------------- | --------------| --------------------------------------|
+| 200           | the blockchain | success |
+| 404           | error message | blockchain not found (should be impossible) |
+| 500           | error message | code throws an error |  
+
+```bash
+curl -s -w "\n%{http_code}"  \
+    --url http://localhost:8000/blockchain/height \
+  | {
+    read body
+    read code
+    echo $code
+     jq <<< "$body"
+}
+```
+```bash
+aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  \
+>     --url http://localhost:8000/blockchain/height \
+>   | {
+>     read body
+>     read code
+>     echo $code
+>      jq <<< "$body"
+> }
+200
+{
+  "height": 1
+}
+
+```
+
+## GET the total number of blocks in the blockchain
+Gets the total number of blocks in the blockchain, which is (getBlockchainHeight + 1)
+
+| Return Code   | Returns       | Definition 
+| ------------- | --------------| --------------------------------------|
+| 200           | the blockchain | success |
+| 404           | error message | blockchain not found (should be impossible) |
+| 500           | error message | code throws an error |  
+
+```bash
+curl -s -w "\n%{http_code}"  \
+    --url http://localhost:8000/blockchain/totalblocks \
+  | {
+    read body
+    read code
+    echo $code
+     jq <<< "$body"
+}
+```
+```bash
+aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  \
+>     --url http://localhost:8000/blockchain/totalblocks \
+>   | {
+>     read body
+>     read code
+>     echo $code
+>      jq <<< "$body"
+> }
+200
+{
+  "totalNumBlocks": 2
+}
+```
+
+## GET validate a specific block by its height
+Gets whether the specified block is valid
+
+| Return Code   | Returns       | Definition 
+| ------------- | --------------| --------------------------------------|
+| 200           | true or false | success |
+| 400           | error message | height cannot be parsed to an integer | 
+| 500           | error message | code throws an error |  
+
+```bash
+curl -s -w "\n%{http_code}"  \
+    --url http://localhost:8000/block/valid/1 \
+  | {
+    read body
+    read code
+    echo $code
+     jq <<< "$body"
+}
+```
+
+```bash
+aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  \
+>     --url http://localhost:8000/block/valid/1 \
+>   | {
+>     read body
+>     read code
+>     echo $code
+>      jq <<< "$body"
+> }
+200
+{
+  "valid": true
+}
+```
+
+
+## GET validate blockchain
+Validates the blockchain and returns a log of validation errors. If errorLog array is empty, the chain is valid.
+
+| Return Code   | Returns       | Definition 
+| ------------- | --------------| --------------------------------------|
+| 200           | errorLog | success  |
+| 500           | error message | code throws an error |  
+
+```bash
+curl -s -w "\n%{http_code}"  \
+    --url http://localhost:8000/blockchain/valid \
+  | {
+    read body
+    read code
+    echo $code
+     jq <<< "$body"
+}
+```
+
+
+```bash
+aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  \
+>     --url http://localhost:8000/blockchain/valid \
+>   | {
+>     read body
+>     read code
+>     echo $code
+>      jq <<< "$body"
+> }
+200
+{
+  "errorLog": []
+}
 ```
