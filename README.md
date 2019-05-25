@@ -477,8 +477,6 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  \
 **Endpoint**: ```http://<host>:8000/blockchain/valid```
 
 
-and returns .
-
 | Return Code   | Returns       | Definition 
 | ------------- | --------------| --------------------------------------|
 | 200           | errorLog | success  |
