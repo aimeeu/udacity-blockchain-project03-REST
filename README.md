@@ -47,22 +47,29 @@
 
 ```$ node app.js```
 
-The genesis block is created when the application starts.
+```bash
+aimee@aimee-lemur:~/Dev/git/github.com/aimeeu/udacity-blockchain-project03-REST$ ls
+app.js              Block.js     LICENSE       package.json       README.md  utils.js
+BlockController.js  LevelDAO.js  node_modules  package-lock.json  rubric
+aimee@aimee-lemur:~/Dev/git/github.com/aimeeu/udacity-blockchain-project03-REST$ node app.js
+Server Listening for port: 8000
+generateGenesisBlock fulfilled:  true
+```
+The server runs on localhost:8000. 
+
+On startup, a LevelDB database ('chaindata') is created and the Genesis block is stored there.
 
 # Testing the two endpoints required for the project
 
-The server runs on [localhost:8000](http://localhost:8000). 
-
-Curl scripts are provided below so the code can be tested. jq is used to format the returned JSON.
-
-
-
+Curl scripts are provided below so the code can be tested. [jq](https://stedolan.github.io/jq/) is used to format the response JSON.
 
 
 ## GET a block by height 
+__Definition__: A GET endpoint that responds to a request using a URL path with a block height parameter or properly handles an error if the height parameter is out of bounds.
 
+**Response**: The response for the endpoint provides a block object in JSON format.
 
-Endpoint: ```http://<host>:8000/block/<height>```
+**Endpoint**: ```http://<host>:8000/block/<height>```
 
 ```bash
 $ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/0 \
@@ -105,7 +112,7 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/bl
 
 ```
 
-### Error conditions
+### CURL examples for error conditions
 
 Request contains a valid integer height that does not exist in the database
 
@@ -164,7 +171,9 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/bl
 
 
 ## POST data for a new block 
-Adds a new block with specified body. Returns the new block.
+**Definition**: A POST endpoint that allows posting a new block with the data payload option to add data to the block body. Block body should support a string of text. 
+
+**Response**: The response for the endpoint is a block object in JSON format.
 
 Endpoint: ```http://<host>:8000/block```
 
@@ -222,6 +231,8 @@ aimee@aimee-lemur:~$  curl -s -w "\n%{http_code}"  --url http://localhost:8000/b
 ### Error conditions
 
 #### 'body' element is missing from message body, i.e. incorrect element name
+This example uses "BLOCK-BODY" instead of "body" as specified in the rubric.
+
 ```bash
  curl -s -w "\n%{http_code}"  --url http://localhost:8000/block \
   --header 'content-type: application/json' \
