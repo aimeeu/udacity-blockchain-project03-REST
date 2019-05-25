@@ -87,8 +87,6 @@ $ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/0 \
 | 400           | error message | height cannot be parsed to an integer |  
 | 500           | error message | code throws an error                  |  
 
-Returns a block in JSON format.
-
 
 ### CURL example for success condition
 
@@ -114,7 +112,7 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/bl
 
 ### CURL examples for error conditions
 
-Request contains a valid integer height that does not exist in the database
+__Request contains a valid integer height that does not exist in the database (height out of bounds)__
 
 Curl command:
 ```bash
@@ -142,7 +140,7 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/bl
 ```
 
 
-Request contains for height a value that does not parse to an integer
+__Request contains for height a value that does not parse to an integer__
 
 Curl command:
 ```bash
@@ -230,7 +228,8 @@ aimee@aimee-lemur:~$  curl -s -w "\n%{http_code}"  --url http://localhost:8000/b
 
 ### Error conditions
 
-#### 'body' element is missing from message body, i.e. incorrect element name
+__'body' element is missing from message body, i.e. incorrect element name__
+
 This example uses "BLOCK-BODY" instead of "body" as specified in the rubric.
 
 ```bash
@@ -259,7 +258,8 @@ aimee@aimee-lemur:~$  curl -s -w "\n%{http_code}"  --url http://localhost:8000/b
 }
 ```
 
-#### 'body' element contains an empty string
+__'body' element contains an empty string__
+
 ```bash
  curl -s -w "\n%{http_code}"  --url http://localhost:8000/block \
   --header 'content-type: application/json' \
