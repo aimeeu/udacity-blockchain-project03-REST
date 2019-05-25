@@ -85,6 +85,7 @@ $ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/0 \
 | ------------- | --------------| --------------------------------------|
 | 200           | the block     | success; block is found               |
 | 400           | error message | height cannot be parsed to an integer |  
+| 404           | error message | block not found |  
 | 500           | error message | code throws an error                  |  
 
 
@@ -140,11 +141,12 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/bl
 ```
 
 
-__Request contains for height a value that does not parse to an integer__
+__Request contains a height value that does not parse to an integer__
 
 Curl command:
 ```bash
-$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/block/bubba \
+$ curl -s -w "\n%{http_code}"  \
+    --url http://localhost:8000/block/bubba \
     | {
       read body
       read code
@@ -173,9 +175,9 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/bl
 
 **Response**: The response for the endpoint is a block object in JSON format.
 
-Endpoint: ```http://<host>:8000/block```
+**Endpoint**: ```http://<host>:8000/block```
 
-Example block body in JSON format:
+Example request message body in JSON format:
 ```json
 {
       "body": "Testing block with test string data"
@@ -290,7 +292,11 @@ aimee@aimee-lemur:~$  curl -s -w "\n%{http_code}"  --url http://localhost:8000/b
 # Testing additional endpoints not required by the project
 
 ## GET the blockchain
-Get all the blocks in the chain
+**Definition**: Get all the blocks in the chain
+
+**Response**: the blockchain in JSON format
+
+**Endpoint**: ```http://<host>:8000/blockchain```
 
 | Return Code   | Returns       | Definition 
 | ------------- | --------------| --------------------------------------|
@@ -347,7 +353,11 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  --url http://localhost:8000/bl
 
 
 ## GET the height of the blockchain
-Gets the height of the blockchain, which is the height of the block last added to the chain
+**Definition**: Gets the height of the blockchain, which is the height of the block last added to the chain
+
+**Response**: the numerical height
+
+**Endpoint**: ```http://<host>:8000/blockchain/height```
 
 | Return Code   | Returns       | Definition 
 | ------------- | --------------| --------------------------------------|
@@ -382,7 +392,11 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  \
 ```
 
 ## GET the total number of blocks in the blockchain
-Gets the total number of blocks in the blockchain, which is (getBlockchainHeight + 1)
+**Definition**: Gets the total number of blocks in the blockchain, which is (getBlockchainHeight + 1)
+
+**Response**: the number of blocks
+
+**Endpoint**: ```http://<host>:8000/blockchain/totalblocks```
 
 | Return Code   | Returns       | Definition 
 | ------------- | --------------| --------------------------------------|
@@ -416,7 +430,11 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  \
 ```
 
 ## GET validate a specific block by its height
-Gets whether the specified block is valid
+**Definition**: Gets whether the specified block is valid
+
+**Response**: the numerical height
+
+**Endpoint**: ```http://<host>:8000/block/valid/<height>```
 
 | Return Code   | Returns       | Definition 
 | ------------- | --------------| --------------------------------------|
@@ -452,7 +470,14 @@ aimee@aimee-lemur:~$ curl -s -w "\n%{http_code}"  \
 
 
 ## GET validate blockchain
-Validates the blockchain and returns a log of validation errors. If errorLog array is empty, the chain is valid.
+**Definition**: Validates the blockchain 
+
+**Response**: a log of validation errors; if errorLog array is empty, the chain is valid
+
+**Endpoint**: ```http://<host>:8000/blockchain/valid```
+
+
+and returns .
 
 | Return Code   | Returns       | Definition 
 | ------------- | --------------| --------------------------------------|
